@@ -6,7 +6,7 @@ variable "resource_group_name" {
 variable "prefix" {
   description = "The prefix which should be used for all resources"
   type        = string
-  default     = "mahy-aks"
+  default     = "mahyaks"
 }
 
 variable "common_tags" {
