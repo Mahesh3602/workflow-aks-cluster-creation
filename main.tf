@@ -16,8 +16,6 @@ module "aks_vnet" {
   address_space   = var.vnet_address_space
   subnet_names    = keys(var.subnet_configuration)
   subnet_prefixes = values(var.subnet_configuration)
-
-  tags = var.common_tags
 }
 
 # 3. AKS Cluster Module
@@ -35,10 +33,9 @@ module "app" {
   automatic_channel_upgrade       = "node-image"
   log_analytics_workspace_enabled = false
 
-  # CRITICAL SANDBOX FIX: 
-  # You don't have permission to create new RGs. 
-  # This forces the AKS managed resources into your current sandbox RG.
-  node_resource_group = data.azurerm_resource_group.main.name
+  # FIX: We removed 'node_resource_group = data.azurerm_resource_group.main.name'
+  # This allows Azure to auto-generate a separate 'MC_' resource group, 
+  # resolving the 'NodeResourceGroupSameAsResourceGroup' error.
 
   # Cluster system pool
   enable_auto_scaling = false
@@ -47,7 +44,6 @@ module "app" {
   agents_pool_name    = "systempool"
 
   # Cluster networking
-  # Matches the 'nodes' key in your terraform.tfvars subnet_configuration
   vnet_subnet_id = module.aks_vnet.vnet_subnets_name_id["nodes"]
   network_plugin = "azure"
   network_policy = "azure"
