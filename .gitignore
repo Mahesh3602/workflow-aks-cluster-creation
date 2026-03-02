@@ -58,6 +58,9 @@ Thumbs.db
 
 #terrafor lock files
 .terraform.lock.hcl
-terraform.tfvars
+# terraform.tfvars
+.terraform/
+*.tfstate
+#terraform.tfvars
 .terraform/
 *.tfstate
