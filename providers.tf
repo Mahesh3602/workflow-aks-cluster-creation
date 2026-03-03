@@ -1,7 +1,16 @@
+terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 3.0"
+    }
+  }
+
+  # THIS IS THE MISSING PIECE
+  backend "azurerm" {} 
+}
+
 provider "azurerm" {
   features {}
-  
-  # Often required in restricted sandboxes to prevent 
-  # errors when Terraform tries to register Azure resource providers.
   skip_provider_registration = true
 }
