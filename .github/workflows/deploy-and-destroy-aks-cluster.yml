@@ -1,12 +1,10 @@
 name: 'AKS Infrastructure Management'
 
 on:
-  push:
-    branches: [ "main" ]
   workflow_dispatch:
     inputs:
       action:
-        description: 'Action to perform'
+        description: 'Select the Terraform action to perform'
         required: true
         default: 'apply'
         type: choice
@@ -20,15 +18,20 @@ env:
   ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
   ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
   TF_VAR_resource_group_name: ${{ vars.AZURE_RG }}
-  # Map the choice input to an env var, defaulting to 'apply' on push
-  TF_ACTION: ${{ github.event.inputs.action || 'apply' }}
+  # Captures the user selection from the dropdown
+  TF_ACTION: ${{ github.event.inputs.action }}
 
 jobs:
   terraform:
+    name: 'Terraform ${{ github.event.inputs.action }}'
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v4
-      - uses: hashicorp/setup-terraform@v3
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Init
         run: |
@@ -38,14 +41,14 @@ jobs:
             -backend-config="container_name=tfstate" \
             -backend-config="key=aks-only.tfstate"
 
-      - name: Terraform Plan
-        if: env.TF_ACTION == 'apply'
-        run: terraform plan -out=tfplan
-
+      # This step only runs if 'apply' is selected
       - name: Terraform Apply
         if: env.TF_ACTION == 'apply'
-        run: terraform apply -auto-approve tfplan
+        run: |
+          terraform plan -out=tfplan
+          terraform apply -auto-approve tfplan
 
+      # This step only runs if 'destroy' is selected
       - name: Terraform Destroy
         if: env.TF_ACTION == 'destroy'
         run: terraform destroy -auto-approve
